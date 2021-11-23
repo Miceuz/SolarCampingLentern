@@ -58,6 +58,12 @@
 
  * Energy consumed: 0.1A * 6V * 4h = 2.4Wh
 
+### Weight analysis
 
+ * 3.5W solar pannel - 96g
+ * PCB 1.6mm  - 72g
+ * Battery 380mAh 7g, 3pack - 22g
+ * Components - 4g
+ * Plexiglass - 73g
 
  
