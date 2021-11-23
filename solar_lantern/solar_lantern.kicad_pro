@@ -453,7 +453,7 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "solar_lantern.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""
@@ -511,6 +511,10 @@
     [
       "5535937f-c0a8-43b3-a11b-2308c909262a",
       "LED driver"
+    ],
+    [
+      "30542f28-d3e0-4aaf-a366-2ebc5a44bd53",
+      "Battery"
     ]
   ],
   "text_variables": {}
