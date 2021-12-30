@@ -1,11 +1,23 @@
 # Open source Solar Camping Lantern
 
-## Requirements
+## Intro
+
+So I wanted to make a lantern for my camping needs. The idea popped in to my ming during a summer music festival, actually. When you camp with your friends and need a bit of extra light in the camp at night. It was a sunny summer, so of course I wanted it to have it solar powered. Can it be self sufficient in it's power needs just from solar energy?
+
+Of course, first I had to check, what's available on the market. Maybe it's just a piece of my expenses and not worth my time?
+
+## Initial requirements
 
  * Light output: ~100lm
  * Run time: 4h
  * Battery: LiPo 3.7V ~2000mAh
  * Charging time: 6h
+
+ I have gauged the amount of needed light from my lumilight pocket torch I have lost and my "cyclope" torch from Decathlon I got this year. 100lm is not super lot of light but still not that bad - human eye is logarithmic and adapts to low light conditions.
+
+ Run time is a simple modest shot from a festival use case scenario - you might need a light from 11 at might to 3 in the morning roughly.
+
+ Charging time is a lazy day camping, maybe I will remember to pull it out and put on a sun sometime. It's not full effective sun time, just general time the device spends on sun semi-kinda-charging.
 
 ## Case studies
 
@@ -37,6 +49,13 @@
  * Dimensions: 127mm dia, 50mm height
  * Weight: 320g
 
+
+There are devices that target the same light output I want. Some of these specifications are inferred as not all manufacturers provide all the information I needed. SunLight 100 does almost exactly what I want, but solar battery this size barely will produce 8.3Wh needed in 7h of charging time. All in all solar in all of these products seems to be a nice addition to USB charging, not the main power provider. 
+
+Also I have bought some not-so-cheap crap from local hardware store that gimmicked like it can do what I want, but solar battery was total crap in those, outputting mere single digit milli-amps.
+
+Thus, I have easily convinced myself that this is well worth as a hobby project. Besides, single time use electronic cigarettes bacame fashionable, meaning a lot of perfectly rechargeable LiPo batteries were wasted - had to think of a way to use them up! So, with the battery sourcing question sorted out, let's not think about price too much and look what happens if we push on the light output efficiency and solar input.
+
 ## Design
 
 ### MPPT options
@@ -46,24 +65,81 @@
  * BQ24650
  * [MPPT Solar Panel Controller with DC Converter](https://www.tindie.com/products/electronicstore/mppt-solar-panel-controller-with-dc-converter-2)
 
+In the times of supply chain collapse, choosing a MMPT capable converter chip for storing solar energy to the battery was not an easy thing. They all are either not available or expensive. Luckily I have stumbled on this board by [PC Tech](https://www.tindie.com/stores/electronicstore/) featuring CN3791. Basically this project could have ended just there, as this board was all I needed - I have made my first prototype using it, but I had to extract a bit more efficiency and add some computer controll to the thing I'm about to build. 
+
 ### Light Source
 
  * L130-4070003000W21 - Vf = 6V, I = 100mA, Light output = 100lm
+
+It's one of the most efficient LEDs available at electronic distributors at the time. Pricy though. What's interesting and handy that it's practically voltage controlled - it has a nice shallow IV curve. Provided you extract the heat from them though. They will happily do 100lm at 0.6W, the efficiency is even higher if you run them at half the rating. That's why I have doubled them up in my design.
+
+Also I have decided to throw in a red light source, to see if it might be usable too. Red light does not dazzle humans too much, so it makes a good low level stanbly light source. I did not want to add additional complication of channel switching for led driver chip so decided to power red led directly from MCU pin.  
 
 ### Photovoltaics
 
  * [Solar pannel](https://www.evita.lt/u-9045-saules-baterijos-modulis-6v-3-5w-165x135mm?search=saul%C4%97s) 6V, 3.5W
 
+These pannels available also at local suppliers looked like a good tradeoff between size and output power. Besides, not a lot to choose from really. I have measured them and they were outputing the rated power, but it dropped drastically with non-perfect orientation to the sun, thus it has to be derated significantly. I have guesstimated MPPT point of it to be somewhere at 80% of it's max voltage and measured the same with a potentiometer hooked up to it.
+
+### Power
+
+ * Battery: 3.7 LiPo, capacity varies: 380mAh, 500mAh total capacity up to 2Ah
+ * MCU powered directly from battery
+ * DC-DC led driver - MCP1664
+
+Batteries are re-used from electronic cigarettes. I don't really know if they retain their safety ratings after they have been re-charged, but people around are re-chargint them and I've heard of no fires happening even when people were abusing them. So I am going to trust them. They come with a protection board and I have tried shorting and over-discharging them - seem to work fine. Their longevity is to be proven, but I am happy to delay their travel to a landfill or a recycler if we are lucky.
+
 ### Operational parameters
 
- * Energy consumed: 0.1A * 6V * 4h = 2.4Wh
+ * Energy consumed: 0.1A * 6V * 4h = 2.4Wh + losses
+ * Solar power available: 3.5W - losses
+ * Light output: 120lm
+
+I have plenty of solar - 1h of perfect sunlight should provide enough of charge for 4 required hours. Battery size seems to be a limiting factor, but there is a small tradeoff with the weight. It will be interesting to experiment with battery sizes and see what run times are achievable.
+
+### Mechanical construction
+
+I've chosen 4 holes to attach the lantern with rope - to a branch or a tarp. Also alternatively it can be used as a coaster for a water bottle. This makes a nice dispersed table light.
+
+Batteries are glued to the PCB. PCB is glued and soldered to the solar panel. Both the solar panel and plexiglass are glued to a 3D printed plastic frame.
+
+Of course it should have some level of ingress protection. Provided all glue seams are tight, the only place for water to seep in is thru a button hole. I am going to experiment with printing of the frame from flexible plastics and have the button hole closed, but for the first revision there's going to be a small seam between hole and plunger and IPX6 rated button behind it.
 
 ### Weight analysis
 
  * 3.5W solar pannel - 96g
- * PCB 1.6mm  - 72g
+ * PCB 1.6mm  - 72g; 0.8mm - 36g
  * Battery 380mAh 7g, 3pack - 22g
  * Components - 4g
  * Plexiglass - 73g
+ * Bezel1 - 89g; Bezel2 - 56g
+ * Glue - 10g
 
- 
+Total weight 297g
+
+### Bells and whistles
+
+ * Charlieplexed leds for battery level indication
+
+### MCU and software
+
+I have chosen my beloved attiny441 - I have a stock of them and I am used to them and it's a relief to spend some time in a simple naive world of 8-bit microcontrollers. It's pretty low power too.
+
+Software functions:
+
+ * On/Off
+ * Different levels of lighting [todo]
+ * Cycle through white and red leds
+ * Indicate battery level via charlieplexed leds
+ * Auto level reduction on low battery [todo]
+ * Fade everywhere [todo]
+ * Sky's the limit, what can you do with a single button interface?
+
+## Final thoughts
+
+I already have several plans for improvement - button is in a weird position, hard to find in the dark. I should put it in the midle of a edge. Also battery level indication leds are a fail - I should have spaced them out along the edge so they would be distinguishable behind the plexiglass.
+
+Weight is a concern, but I am limited here to materials I have access to. I have made some improvements by using a thin PCB, maybe I can make the frame lighter, but the real limiting factors are solar pannel and plexiglass.
+
+I have tried using the first prototype while camping at sunny autumn and it proved to be working well. Working time with 870mAh of battery was a little too short for long autumn evenings, but it was able to fully charge during the day. Later I brought the pannel to a rainy camping trip in December. Pannel was barely charging the 1.5Ah battery, but it held almost two evenings allowing us to set up camp, prepare wood and chill under the red light in addition to fire. I think it's not much useful for rainy winter in Easter Europe, but it will be a perfect light for summer camping.
+
