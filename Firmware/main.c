@@ -6,6 +6,7 @@
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #include <stdlib.h>
+#include <util/delay.h>
 
 #include "debounce.h"
 #include "millis.h"
@@ -94,8 +95,8 @@ ISR(PCINT0_vect) { pinChangeIntDisable(); }
 inline static void sleep() {
   buttonReset(&button);
 
-  DDRA |= _BV(PA0);
-  PORTA &= ~_BV(PA0);
+  // DDRA |= _BV(PA0);
+  // PORTA &= ~_BV(PA0);
 
   DDRA |= _BV(PA1);
   PORTA &= ~_BV(PA1);
@@ -127,7 +128,16 @@ inline static void sleep() {
   // wdt_enable(WDTO_2S);
 }
 
-typedef enum { STATE_IDLE, STATE_WHITE_ON, STATE_RED_ON } State_t;
+uint8_t getBatteryLevel();
+void bargraphStart(uint8_t level);
+void bargraphStop();
+
+typedef enum {
+  STATE_IDLE,
+  STATE_BATT_LEVEL,
+  STATE_WHITE_ON,
+  STATE_RED_ON
+} State_t;
 State_t state = STATE_IDLE;
 
 void onExit_STATE_IDLE() {}
@@ -151,14 +161,27 @@ void onEnter_STATE_RED_ON() {
 
 void onExit_STATE_RED_ON() { ledRedOff(); }
 
+void onEnter_STATE_BATT_LEVEL() {
+  bargraphStart(getBatteryLevel());
+  state = STATE_BATT_LEVEL;
+}
+
+void onExit_STATE_BATT_LEVEL() { bargraphStop(); }
+
 void processStateMachine() {
   switch (state) {
   case STATE_IDLE:
     if (isButtonEvent(&button, BUTTON_PRESSED)) {
       onExit_STATE_IDLE();
-      onEnter_STATE_WHITE_ON();
+      onEnter_STATE_BATT_LEVEL();
     }
 
+    break;
+  case STATE_BATT_LEVEL:
+    if (isButtonEvent(&button, BUTTON_RELEASED)) {
+      onExit_STATE_BATT_LEVEL();
+      onEnter_STATE_WHITE_ON();
+    }
     break;
   case STATE_WHITE_ON:
     if (isButtonEvent(&button, BUTTON_PRESSED)) {
@@ -202,18 +225,18 @@ void charlie(uint8_t x) {
     DDRA &= ~_BV(CHARLIE2);
     DDRA |= _BV(CHARLIE3);
 
-    PORTA |= _BV(CHARLIE1);
+    PORTA &= ~_BV(CHARLIE1);
     PORTA &= ~_BV(CHARLIE2);
-    PORTA &= ~_BV(CHARLIE3);
+    PORTA |= _BV(CHARLIE3);
     break;
   case 2:
     DDRA |= _BV(CHARLIE1);
     DDRA &= ~_BV(CHARLIE2);
     DDRA |= _BV(CHARLIE3);
 
-    PORTA &= ~_BV(CHARLIE1);
+    PORTA |= _BV(CHARLIE1);
     PORTA &= ~_BV(CHARLIE2);
-    PORTA |= _BV(CHARLIE3);
+    PORTA &= ~_BV(CHARLIE3);
     break;
   case 3:
     DDRA &= ~_BV(CHARLIE1);
@@ -256,6 +279,102 @@ void charlie(uint8_t x) {
   }
 }
 
+uint8_t currCharlie = 0;
+uint8_t bargraphLevel = 0;
+void bargraphStart(uint8_t level) {
+  bargraphLevel = level;
+  TCCR2A = 0;
+  TCCR2B = 0;
+  TCCR2B |= _BV(WGM22);
+  TCCR2B |= _BV(CS20);
+  TIMSK2 |= _BV(OCIE2A);
+  OCR2A = 10000;
+}
+
+void bargraphStop() {
+  TCCR2B = 0;
+  charlie(0);
+}
+
+ISR(TIMER2_COMPA_vect) {
+  if (currCharlie <= bargraphLevel) {
+    charlie(currCharlie);
+  } else {
+    charlie(0);
+  }
+
+  currCharlie++;
+  if (currCharlie > 6) {
+    currCharlie = 0;
+  }
+}
+
+#define CHANNEL_BATTERY 0
+
+uint8_t adcInProgress = 0;
+
+inline static void sleepWhileADC() {
+  adcInProgress = 1;
+  while (adcInProgress) {
+    set_sleep_mode(SLEEP_MODE_ADC);
+    sleep_mode();
+  }
+}
+
+ISR(ADC_vect) {
+  adcInProgress = 0;
+  // nothing, just wake up
+}
+
+uint16_t adcReadChannel(uint8_t channel) {
+  ADMUXA = channel;
+  ADCSRA |= _BV(ADSC);
+  // sleepWhileADC();
+  loop_until_bit_is_clear(ADCSRA, ADSC);
+  uint16_t ret = ADC;
+  return ret;
+}
+
+inline static void adcSetup() {
+  PRR &= ~_BV(PRADC);
+  DIDR0 |= _BV(ADC0D);
+  ADCSRA = 0;
+  ADMUXB = _BV(REFS1); // use internal 2.2V reference
+  ADCSRA = _BV(ADEN) | _BV(ADPS2) | _BV(ADPS1) | _BV(ADPS0) | _BV(ADIE);
+}
+
+inline static void adcDisable() {
+  ADCSRA = 0;
+  PRR |= _BV(PRADC);
+}
+
+uint16_t adcGetBatteryVoltage() {
+  adcSetup();
+  adcReadChannel(CHANNEL_BATTERY);
+  uint32_t lsb = adcReadChannel(CHANNEL_BATTERY);
+  adcDisable();
+  return lsb * 220 * 2 / 1024;
+}
+
+uint8_t getBatteryLevel() {
+  uint16_t voltage = adcGetBatteryVoltage();
+  if (voltage <= 320) {
+    return 1;
+  } else if (voltage <= 340) {
+    return 2;
+  } else if (voltage <= 360) {
+    return 3;
+  } else if (voltage <= 370) {
+    return 4;
+  } else if (voltage <= 400) {
+    return 5;
+  } else if (voltage <= 420) {
+    return 6;
+  } else if (voltage > 420) {
+    return 6;
+  }
+}
+
 uint8_t c = 0;
 
 void main() {
@@ -271,13 +390,28 @@ void main() {
   // ledRedOn();
 
   onEnter_STATE_IDLE();
+
   while (1) {
     processButtons();
     processStateMachine();
     wdt_reset();
-    // charlie(c++);
-    // if (c > 7) {
-    //   c = 0;
-    // }
   }
+
+  // bargraphStart(0);
+  // while (1) {
+  //   bargraphLevel = 0;
+  //   _delay_ms(500);
+  //   bargraphLevel = 1;
+  //   _delay_ms(500);
+  //   bargraphLevel = 2;
+  //   _delay_ms(500);
+  //   bargraphLevel = 3;
+  //   _delay_ms(500);
+  //   bargraphLevel = 4;
+  //   _delay_ms(500);
+  //   bargraphLevel = 5;
+  //   _delay_ms(500);
+  //   bargraphLevel = 6;
+  //   _delay_ms(500);
+  // }
 }
