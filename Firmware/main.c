@@ -3,6 +3,7 @@
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <avr/sleep.h>
 #include <avr/wdt.h>
 #include <stdlib.h>
@@ -10,6 +11,26 @@
 
 #include "debounce.h"
 #include "millis.h"
+
+const uint16_t PROGMEM gamma8[] = {
+    0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   2,    2,
+    2,   3,   3,   3,   4,   4,   5,   5,   5,   6,   7,   7,   8,   8,    9,
+    10,  10,  11,  12,  13,  13,  14,  15,  16,  17,  18,  19,  20,  21,   22,
+    23,  24,  25,  27,  28,  29,  30,  32,  33,  34,  36,  37,  39,  40,   42,
+    43,  45,  46,  48,  50,  52,  53,  55,  57,  59,  61,  62,  64,  66,   68,
+    70,  72,  75,  77,  79,  81,  83,  85,  88,  90,  92,  95,  97,  100,  102,
+    105, 107, 110, 112, 115, 118, 121, 123, 126, 129, 132, 135, 138, 141,  144,
+    147, 150, 153, 156, 159, 162, 166, 169, 172, 175, 179, 182, 186, 189,  193,
+    196, 200, 203, 207, 211, 215, 218, 222, 226, 230, 234, 238, 242, 246,  250,
+    254, 258, 262, 266, 271, 275, 279, 284, 288, 292, 297, 301, 306, 311,  315,
+    320, 324, 329, 334, 339, 344, 348, 353, 358, 363, 368, 373, 378, 384,  389,
+    394, 399, 405, 410, 415, 421, 426, 432, 437, 443, 448, 454, 459, 465,  471,
+    477, 483, 488, 494, 500, 506, 512, 518, 524, 530, 537, 543, 549, 555,  562,
+    568, 575, 581, 587, 594, 601, 607, 614, 620, 627, 634, 641, 648, 654,  661,
+    668, 675, 682, 689, 697, 704, 711, 718, 725, 733, 740, 747, 755, 762,  770,
+    777, 785, 793, 800, 808, 816, 824, 831, 839, 847, 855, 863, 871, 879,  887,
+    896, 904, 912, 920, 929, 937, 945, 954, 962, 971, 980, 988, 997, 1005, 1014,
+    1023};
 
 #define BUTTON PA6
 #define LED_WHITE_EN PB0
@@ -23,23 +44,25 @@ void buttonInit() {
   PUEA |= _BV(BUTTON);
 }
 
-static inline void ledWhiteOn() {
+static inline void ledWhiteSetBrightnes(uint16_t brightness) {
+  OCR1A = brightness;
+}
+
+static inline void ledWhiteOn(uint16_t brightness) {
+  ledWhiteSetBrightnes(brightness);
   PORTB &= ~_BV(LED_WHITE_EN);
   PORTB |= _BV(LED_WHITE_PWM);
   TOCPMCOE |= _BV(TOCC7OE);
 }
 
 static inline void ledWhiteOff() {
+  ledWhiteSetBrightnes(0);
   PORTB |= _BV(LED_WHITE_EN);
   PORTB &= ~_BV(LED_WHITE_PWM);
   TOCPMCOE &= ~_BV(TOCC7OE);
 }
 
-static inline void ledWhiteSetBrightnes(uint8_t brightness) {
-  OCR1A = brightness;
-}
-
-#define BRIGHTNESS_DEFAULT 255
+#define BRIGHTNESS_DEFAULT 1023
 
 static inline void ledRedOn() { PORTA |= _BV(LED_RED); }
 static inline void ledRedOff() { PORTA &= ~_BV(LED_RED); }
@@ -53,12 +76,12 @@ void ledsInit() {
 
   TCCR1A = 0;
   TCCR1A |= _BV(COM1A1);
-  TCCR1A |= _BV(WGM10);
+  TCCR1A |= _BV(WGM10) | _BV(WGM11);
   TCCR1B = 0;
   TCCR1B |= _BV(WGM12);
   TCCR1B |= _BV(CS10) | _BV(CS11);
 
-  ledWhiteSetBrightnes(BRIGHTNESS_DEFAULT);
+  ledWhiteSetBrightnes(0);
   ledWhiteOff();
   ledRedOff();
 }
@@ -78,7 +101,7 @@ void processButtons() {
     debounce(&button, 0 == (PINA & _BV(BUTTON)));
     buttonDebounceTs = millis();
   }
-  serviceButton(&button, 0, 0);
+  serviceButtonWithAutorepeat(&button, 0, 0, 0, millis());
 }
 
 inline static void pinChangeIntDisable() { GIMSK &= ~_BV(PCIE0); }
@@ -136,7 +159,8 @@ typedef enum {
   STATE_IDLE,
   STATE_BATT_LEVEL,
   STATE_WHITE_ON,
-  STATE_RED_ON
+  STATE_RED_ON,
+  STATE_FADE_WHITE
 } State_t;
 State_t state = STATE_IDLE;
 
@@ -144,9 +168,9 @@ void onExit_STATE_IDLE() {}
 
 void onExit_STATE_WHITE_ON() { ledWhiteOff(); }
 
-void onEnter_STATE_WHITE_ON() {
+void onEnter_STATE_WHITE_ON(uint16_t brightness) {
   state = STATE_WHITE_ON;
-  ledWhiteOn();
+  ledWhiteOn(brightness);
 }
 
 void onEnter_STATE_IDLE() {
@@ -168,6 +192,38 @@ void onEnter_STATE_BATT_LEVEL() {
 
 void onExit_STATE_BATT_LEVEL() { bargraphStop(); }
 
+uint32_t fade_ts = 0;
+uint8_t br = 0;
+bool fadeUp = true;
+
+void fadeWhite() {
+  if (millis() - fade_ts > 10) {
+    ledWhiteSetBrightnes(pgm_read_word(&gamma8[br]));
+    fade_ts = millis();
+    if (fadeUp) {
+      br++;
+      if (br == 255) {
+        fadeUp = false;
+      }
+    } else {
+      br--;
+      if (30 == br) {
+        fadeUp = true;
+      }
+    }
+  }
+}
+
+void onExit_STATE_FADE_WHITE() {}
+
+void onEnter_STATE_FADE_WHITE() {
+  br = 255;
+  // ledWhiteOn(&gamma8[br]);
+  fadeUp = false;
+  fade_ts = millis();
+  state = STATE_FADE_WHITE;
+}
+
 void processStateMachine() {
   switch (state) {
   case STATE_IDLE:
@@ -175,18 +231,26 @@ void processStateMachine() {
       onExit_STATE_IDLE();
       onEnter_STATE_BATT_LEVEL();
     }
-
     break;
   case STATE_BATT_LEVEL:
     if (isButtonEvent(&button, BUTTON_RELEASED)) {
       onExit_STATE_BATT_LEVEL();
-      onEnter_STATE_WHITE_ON();
+      onEnter_STATE_WHITE_ON(BRIGHTNESS_DEFAULT);
+    }
+    break;
+  case STATE_FADE_WHITE:
+    fadeWhite();
+    if (isButtonEvent(&button, BUTTON_RELEASED)) {
+      onExit_STATE_FADE_WHITE();
+      onEnter_STATE_WHITE_ON(OCR1A);
     }
     break;
   case STATE_WHITE_ON:
-    if (isButtonEvent(&button, BUTTON_PRESSED)) {
+    if (isButtonEvent(&button, BUTTON_RELEASED)) {
       onExit_STATE_WHITE_ON();
       onEnter_STATE_RED_ON();
+    } else if (isLongPress(&button, millis())) {
+      onEnter_STATE_FADE_WHITE();
     }
     break;
 
