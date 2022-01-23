@@ -46,7 +46,7 @@ bool isButtonEvent(volatile switch_t *button, uint8_t state) {
   return false;
 }
 
-static uint8_t isLongPress(volatile switch_t *button, uint32_t timestamp) {
+uint8_t isLongPress(volatile switch_t *button, uint32_t timestamp) {
   return button->pressed &&
          ((timestamp - button->pressedAt) > button->pressTimeout);
 }

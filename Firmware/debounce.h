@@ -32,5 +32,6 @@ extern void serviceButtonWithAutorepeat(volatile switch_t *button,
 extern void clear(volatile switch_t *button);
 extern bool isButtonEvent(volatile switch_t *button, uint8_t state);
 extern void buttonReset(volatile switch_t *button);
+extern uint8_t isLongPress(volatile switch_t *button, uint32_t timestamp);
 
 #endif /* DEBOUNCE_H_ */
