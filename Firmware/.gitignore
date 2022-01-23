@@ -1,0 +1,6 @@
+*.i
+*.o
+*.s
+*.elf
+*.hex
+.vscode
