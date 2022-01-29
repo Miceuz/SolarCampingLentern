@@ -4,7 +4,7 @@
 
 I started seeing a lot of disposable electronic cigarettes being used. As everyone knows, those devices contain perfectly rechargeable LiPo battery. And I've seen them thrown away everywhere - on streets, in general waste thrashcans, etc. While a lot of my friends have successfully refilled juice and re-charged the battery, the devices are not built to last - heating coil dies after several re-uses anyway. I have decided to look for a way to recycle those batteries. 
 
-So have decided to make a lantern for my camping needs and also investigate a product parameter space. The idea popped in to my mind during a summer music festival, actually. When you camp with your friends and need a bit of extra light in the camp at night. It was a sunny summer, so of course I had to have it solar powered. Provided unlimited supply of batteries, can it be self sufficient in it's power needs just from solar energy while still being manageable in camp environment?
+So I have decided to make a lantern for my camping needs and also investigate a product parameter space. The idea popped in to my mind during a summer music festival, actually. When you camp with your friends and need a bit of extra light in the camp at night. It was a sunny summer, so of course I had to have it solar powered. Provided unlimited supply of batteries, can it be self sufficient in it's power needs just from solar energy while still being manageable in camp environment?
 
 It's always a good idea to check what's available at the market. Maybe there is a product on the market that does just that? Just a piece of my expenses, not worth spending my time?
 
@@ -15,11 +15,11 @@ It's always a good idea to check what's available at the market. Maybe there is 
  * Battery: LiPo 3.7V ~2000mAh
  * Charging time: 6h
 
- I have gauged the amount of needed light from my lumilight pocket torch I have lost and my "cyclope" torch from Decathlon I got this year. 100lm is not super a lot of light but still not that bad - human eye is logarithmic and adapts to low light conditions - it's enough to see people and stuff around.
+I have gauged the amount of needed light from my lumilight pocket torch I have lost and my "cyclope" torch from Decathlon I got this year. 100lm is not a huge amount of light but still not that bad - it's enough to see people and stuff around, human eye is logarithmic and adapts to low light conditions .
 
- Run time is a modest shot from a festival use case scenario - you might need light from 11 at might to 3 in the morning roughly.
+Run time is a modest shot from a festival use case scenario - you might need light from 11 at night to 3 in the morning roughly.
 
- Charging time is a lazy day camping, maybe I will remember to pull it out and put on a sun sometime. It's not full effective sun time, just general time the device spends on sun semi-kinda-charging.
+Charging time is a lazy day camping, maybe I will remember to pull it out and put on a sun sometime. It's not full effective sun time, just general time the device spends on sun semi-kinda-charging.
 
 ## Case studies
 
@@ -75,7 +75,7 @@ In the times of supply chain collapse, choosing a MMPT capable converter chip fo
 
  * L130-4070003000W21 - Vf = 6V, I = 100mA, Light output = 100lm
 
-It's one of the most efficient LEDs available at electronic distributors at the time. Pricy though. What's interesting and handy is that it's practically voltage controlled - it has a nice shallow IV curve. Provided you extract the heat from them though. They will happily do 100lm at 0.6W, the efficiency is even higher if you run them at half the rating. That's why I have doubled them up in my design.
+It's one of the most efficient LEDs available at electronic distributors at the time. What's interesting and handy is that it's practically voltage controlled - it has a nice shallow IV curve. Provided you extract the heat from them though. They will happily do 100lm at 0.6W, the efficiency is even higher if you run them at half the rating. That's why I have doubled them up in my design.
 
 Also I have decided to throw in a red light source, to see if it might be usable too. Red light does not dazzle humans too much, so it makes a good low level stanbly light source. I did not want to add additional complication of channel switching for led driver chip so decided to power red led directly from MCU pin.  
 
@@ -83,7 +83,7 @@ Also I have decided to throw in a red light source, to see if it might be usable
 
  * [Solar pannel](https://www.evita.lt/u-9045-saules-baterijos-modulis-6v-3-5w-165x135mm?search=saul%C4%97s) 6V, 3.5W
 
-These pannels available also at local suppliers looked like a good tradeoff between size and output power. Besides, not a lot to choose from, really. I have measured them and they were outputing the rated power, but it dropped drastically with non-perfect orientation to the sun, thus it has to be derated significantly. I have guesstimated MPPT point of it to be somewhere at 80% of it's max voltage and measured the same with a potentiometer hooked up to it.
+These pannels available at local suppliers looked like a good tradeoff between size and output power. Besides, not a lot to choose from, really. I have measured them and they were outputing the rated power, but it dropped drastically with non-perfect orientation to the sun, thus it has to be derated significantly. I have guesstimated MPPT point of it to be somewhere at 80% of the pannel's open circuit voltage and measured the same with a potentiometer hooked up to it.
 
 ### Power
 
@@ -91,7 +91,9 @@ These pannels available also at local suppliers looked like a good tradeoff betw
  * MCU powered directly from battery
  * DC-DC led driver - MCP1664
 
-Batteries are re-used from electronic cigarettes. I don't really know if they retain their safety ratings after they have been re-charged, but people around are re-chargint them and I've heard of no fires happening. They come with a protection board and I have tried shorting and over-discharging them - seem to work fine, also I've seen my friends ridiciously abusing them with high charge currents on par of 3C. Their longevity is to be proven though as they might not be optimized to a lot of re-charge cycles, but it seems their safety is on par with standards mandatory with CE marking. I am happy to delay their travel to a landfill or a recycler. **But if you replicate this design, be warned that battery failure is a risk** 
+Batteries are re-used from electronic cigarettes. I don't really know if they retain their safety ratings after they have been re-charged, but people around are re-chargint them and I've heard of no fires happening. 
+
+They come with a protection board and I have tried shorting and over-discharging them - seem to work fine, also I've seen my friends ridiciously abusing them with high charge currents on par of 3C. Their longevity is to be proven though as they might not be optimized to a lot of re-charge cycles, but it seems their safety is on par with standards mandatory with CE marking. I am happy to delay their travel to a landfill or a recycler. **If you replicate this design, be warned that battery failure is a risk to be considered!** 
 
 ### Operational parameters
 
@@ -99,7 +101,7 @@ Batteries are re-used from electronic cigarettes. I don't really know if they re
  * Solar power available: 3.5W minus conversion losses
  * Light output: 120lm
 
-I have plenty of solar - 1h of perfect sunlight should provide enough of charge for 4 required hours. Battery size seems to be a limiting factor, but there is a small tradeoff with the weight. It will be interesting to experiment with battery sizes and see what run times are achievable.
+It has plenty of solar - 1h of perfect sunlight should provide enough of charge for 4 required hours. Seems to make sense to have more battery capacity, but there is a small tradeoff with the weight. It will be interesting to experiment with battery sizes and see what run times are achievable.
 
 ### Mechanical construction
 
@@ -139,7 +141,6 @@ Software functions:
 | Electronic components | 4 |
 | Glue | 10 |
 | **Total** | **297** |
-
 
 ## Price analysis
 
