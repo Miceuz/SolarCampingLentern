@@ -11,6 +11,7 @@
     (company "Catnip electronics")
     (comment 1 "Albertas Mickėnas")
     (comment 2 "mic@wemakethings.net")
+    (comment 3 "SPDX-License-Identifier: CERN-OHL-S-2.0")
   )
 
   (lib_symbols
@@ -1042,6 +1043,11 @@
     (uuid fd998719-8af3-4f42-9087-a226606a1f29)
   )
 
+  (text "This source is distributed WITHOUT ANY EXPRESS OR IMPLIED WARRANTY,          \nINCLUDING OF MERCHANTABILITY, SATISFACTORY QUALITY AND FITNESS FOR A         \nPARTICULAR PURPOSE. Please see the CERN-OHL-S v2 for applicable conditions.  \n                                                                              \n Source location: https://github.com/Miceuz/SolarCampingLentern\n                                                                              \nAs per CERN-OHL-S v2 section 4, should You produce hardware based on this    \nsource, You must where practicable maintain the Source Location visible      \non the external case of the device or other products you make using this      \nsource.                                                                      \n"
+    (at 20.955 190.5 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid c611bc05-49b5-40ec-8cdb-1a1bb2d058ad)
+  )
   (text "Battery level indication" (at 179.07 105.41 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid d4a26d57-4fc4-45e6-a1d9-b71e9d48e400)

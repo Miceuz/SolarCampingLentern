@@ -15,11 +15,11 @@ It's always a good idea to check what's available at the market. Maybe there is 
  * Battery: LiPo 3.7V ~2000mAh
  * Charging time: 6h
 
-I have gauged the amount of needed light from my lumilight pocket torch I have lost and my "cyclope" torch from Decathlon I got this year. 100lm is not a huge amount of light but still not that bad - it's enough to see people and stuff around, human eye is logarithmic and adapts to low light conditions .
+I have gauged the amount of needed light from my lumilight pocket torch I have lost and my "cyclope" torch from Decathlon I got this year. 100lm is not huge amount of light but still not that bad - it's enough to see people and stuff around, human eye is logarithmic and adapts to low light conditions.
 
-Run time is a modest shot from a festival use case scenario - you might need light from 11 at night to 3 in the morning roughly.
+Run time is a modest guess from a festival scenario - you might need light from 11 at night to 3 in the morning, roughly.
 
-Charging time is a lazy day camping, maybe I will remember to pull it out and put on a sun sometime. It's not full effective sun time, just general time the device spends on sun semi-kinda-charging.
+Charging time is a lazy day camping, maybe I will remember to pull it out and put on a sun sometime. It's not full effective sun time, just general time the device spends in sun semi-kinda-charging.
 
 ## Case studies
 
@@ -69,7 +69,7 @@ Thus, I have easily convinced myself that this is well worth as a hobby project.
  * BQ24650
  * [MPPT Solar Panel Controller with DC Converter](https://www.tindie.com/products/electronicstore/mppt-solar-panel-controller-with-dc-converter-2)
 
-In the times of supply chain collapse, choosing a MMPT capable converter chip for storing solar energy to the battery was not an easy thing. They all are either not available or expensive. Luckily I have stumbled on this board by [PC Tech](https://www.tindie.com/stores/electronicstore/) featuring CN3791. Basically this project could have ended just there, as this board was all I needed - I have made my first prototype using it, but I had to extract a bit more efficiency and add some computer controll to the thing. 
+In the times of supply chain collapse, choosing a MMPT capable converter chip for storing solar energy to the battery was not an easy thing. They all are either not available or expensive. Luckily I have stumbled on this board by [PC Tech](https://www.tindie.com/stores/electronicstore/) featuring CN3791. Basically this project could have ended just there, as this board was all I needed - I have made my first prototype using it. Although I had to extract a bit more efficiency by having a dedicated led dirver, also add some computer controll to the thing. 
 
 ### Light Source
 
@@ -77,27 +77,29 @@ In the times of supply chain collapse, choosing a MMPT capable converter chip fo
 
 It's one of the most efficient LEDs available at electronic distributors at the time. What's interesting and handy is that it's practically voltage controlled - it has a nice shallow IV curve. Provided you extract the heat from them though. They will happily do 100lm at 0.6W, the efficiency is even higher if you run them at half the rating. That's why I have doubled them up in my design.
 
-Also I have decided to throw in a red light source, to see if it might be usable too. Red light does not dazzle humans too much, so it makes a good low level stanbly light source. I did not want to add additional complication of channel switching for led driver chip so decided to power red led directly from MCU pin.  
+Also I have decided to throw in a red light source, to see if it might be usable too. Red light does not dazzle humans too much, so it makes a good low level stanbly light source for the night. I did not want to add additional complication of channel switching for led driver chip, thus decided to power red led directly from MCU pin.
 
 ### Photovoltaics
 
  * [Solar pannel](https://www.evita.lt/u-9045-saules-baterijos-modulis-6v-3-5w-165x135mm?search=saul%C4%97s) 6V, 3.5W
 
-These pannels available at local suppliers looked like a good tradeoff between size and output power. Besides, not a lot to choose from, really. I have measured them and they were outputing the rated power, but it dropped drastically with non-perfect orientation to the sun, thus it has to be derated significantly. I have guesstimated MPPT point of it to be somewhere at 80% of the pannel's open circuit voltage and measured the same with a potentiometer hooked up to it.
+These pannels, available at local suppliers, looked like a good tradeoff between size and output power. Besides, not a lot to choose from, really. I have measured them and they were outputing the rated power, but it dropped drastically with non-perfect orientation to the sun, thus it has to be derated significantly. I have guesstimated MPPT point of the panel to be somewhere at 80% of it's open circuit voltage and measured about the same with a potentiometer hooked up to it.
 
 ### Power
 
- * Battery: 3.7 LiPo, capacity varies: 380mAh, 500mAh total capacity up to 2Ah
+**If you replicate this design, be warned that battery failure is a risk to be considered!**
+
+ * Battery: 3.7 LiPo, capacity varies: 1.4Wh, 1.85Wh, total capacity up to 11Wh
  * MCU powered directly from battery
  * DC-DC led driver - MCP1664
 
 Batteries are re-used from electronic cigarettes. I don't really know if they retain their safety ratings after they have been re-charged, but people around are re-chargint them and I've heard of no fires happening. 
 
-They come with a protection board and I have tried shorting and over-discharging them - seem to work fine, also I've seen my friends ridiciously abusing them with high charge currents on par of 3C. Their longevity is to be proven though as they might not be optimized to a lot of re-charge cycles, but it seems their safety is on par with standards mandatory with CE marking. I am happy to delay their travel to a landfill or a recycler. **If you replicate this design, be warned that battery failure is a risk to be considered!** 
+They come with a protection board and I have tried shorting and over-discharging them - seem to work fine, also I've seen my friends ridiciously abusing them with high charge currents on par of 3C. Their longevity is to be proven though as they might not be optimized for a lot of re-charge cycles, but it seems their safety is on par with standards mandatory with CE marking. I am happy to delay their travel to a landfill or a recycler.  
 
 ### Operational parameters
 
- * Energy consumed: 0.1A * 6V * 4h = 2.4Wh + losses
+ * Energy consumed: 0.1A * 6V * 4h = 2.4Wh
  * Solar power available: 3.5W minus conversion losses
  * Light output: 120lm
 
@@ -105,11 +107,11 @@ It has plenty of solar - 1h of perfect sunlight should provide enough of charge 
 
 ### Mechanical construction
 
-I've chosen 4 holes to attach the lantern with rope - to a branch or a tarp. Also alternatively it can be used as a coaster for a water bottle. This makes a nice dispersed table light.
+Size and shape of the device is dictated by the solar panel. Since I wanted a lot of solar power, I knew I will not be able to make it as compact as commenrially available devices. Also mechanical side of things is not my strength, so I went for a simple flat pannel. One of use cases for such a light would be as a coaster for a water bottle - that makes a pretty nice low effort table light. Also I've added 4 holes to attach the lantern with rope - to a branch or a tarp. 
 
-Batteries are glued to the PCB. PCB is glued and soldered to the solar panel. Both the solar panel and plexiglass are glued to a 3D printed plastic frame.
+All assembly is glue based (blergh!). Batteries are glued to the PCB. PCB is glued and soldered to the solar panel. Both the solar panel and plexiglass are glued to a 3D printed plastic frame.
 
-Of course it should have some level of ingress protection. Provided all glue seams are tight, the only place for water to seep in is thru a button hole. I am going to experiment with printing of the frame from flexible plastics and have the button hole closed, but for the first revision there's going to be a small seam between hole and plunger and IPX6 rated button behind it.
+Considering the usage scenario, of course it should have some level of ingress protection. Provided all glue seams are tight (sic!), the only place for water to seep in is thru a button hole. I am going to experiment with printing of the frame from flexible plastics and have the button hole closed, but for the first revision there's going to be a small seam between hole and plunger and IPX6 rated button behind it.
 
 ### MCU and software
 
@@ -142,7 +144,7 @@ Software functions:
 | Glue | 10 |
 | **Total** | **297** |
 
-## Price analysis
+## BOM Price analysis
 
 | Item | Price, € |
 |------|----------|
@@ -165,13 +167,16 @@ Prices are for a small batch of 10 units.
  * Charging time for 4h run time: 1h (perfect sun conditions)
  * Dimensions: 193x163x15 mm
  * Weight: 297g
- * Price: 27€
+ * BOM Price: 27€
 
-## Final thoughts
+## Conslusion
 
-I already have several plans for improvement - button is in a weird position, hard to find in the dark. I should put it in the midle of a edge. Also battery level indication leds are a fail - I should have spaced them out along the edge so they would be distinguishable behind the plexiglass.
+I already have several plans for improvement - button is in a weird position - hard to find in the dark. I should put it in the midle of a edge. Battery level indication leds are a fail - I should have spaced them out along the edge so they would be distinguishable behind the plexiglass. Also I sould use 4 while leds instead of two, also spaced out as now the single light source is a bit too strong. Trying to build one based on a smaller 100x100mm solar pannel is also an interesting direction to explore.
 
-Weight is a concern, but I am limited here to materials I have access to. I have made some improvements by using a thin PCB, maybe I can make the frame lighter, but the real limiting factors are solar pannel and plexiglass.
+Weight is a concern, but here I am limited to materials I have access to. I have made some improvements by using a 0.8mm PCB, maybe I can make the frame lighter, but the real limiting factors are solar pannel and plexiglass.
 
-I have tried using the first prototype while camping at sunny autumn and it proved to be working well. Working time with 870mAh of battery was a little too short for long autumn evenings, but it was able to fully charge during the day. Later I brought the pannel to a rainy camping trip in December. Pannel was barely charging the 1.5Ah battery, but it held almost two evenings allowing us to set up camp, prepare wood and chill under the red light in addition to fire. I think it's not much useful for rainy winter in Easter Europe, but it will be a perfect light for summer camping.
+I have tried using the first prototype while camping at sunny autumn and it proved to be working well. Working time with 870mAh of battery was a little too short for long autumn evenings, but it was able to fully charge during the day. Later I brought the pannel to a rainy camping trip in December. Pannel was barely charging the 5.5Ah battery, but it held almost two evenings allowing us to set up camp, prepare wood and chill under the red light in addition to fire. I think it's not much useful for rainy winter in Easter Europe, but it will be a perfect light for summer camping.
 
+## Licence
+
+[CERN Open Hardware Licence Version 2 - Strongly Reciprocal](https://ohwr.org/cern_ohl_s_v2.txt)
