@@ -59,19 +59,37 @@ const uint16_t PROGMEM gamma8[] = {
 #define LED_WHITE_PWM PB2
 #define LED_RED PA5
 
+#define BUTTON_DEBOUNCE_INTERVAL_MS 10
+uint32_t buttonDebounceTs = 0;
 switch_t button = BUTTON_DEFAULT;
+
+#define BRIGHTNESS_DEFAULT 1023
+uint32_t fade_ts = 0;
+uint8_t brightness = 255;
+bool fadeUp = false;
+uint32_t state_change_ts = 0;
+
+typedef enum {
+  STATE_IDLE,
+  STATE_BATT_LEVEL,
+  STATE_WHITE_ON,
+  STATE_RED_ON,
+  STATE_FADE_WHITE
+} State_t;
+
+State_t state = STATE_IDLE;
 
 void buttonInit() {
   DDRA &= ~_BV(BUTTON);
   PUEA |= _BV(BUTTON);
 }
 
-static inline void ledWhiteSetBrightnes(uint16_t brightness) {
-  OCR1A = brightness;
+static inline void ledWhiteSetBrightnes(uint16_t p_brightness) {
+  OCR1A = p_brightness;
 }
 
-static inline void ledWhiteOn(uint16_t brightness) {
-  ledWhiteSetBrightnes(brightness);
+static inline void ledWhiteOn(uint16_t p_brightness) {
+  ledWhiteSetBrightnes(p_brightness);
   PORTB &= ~_BV(LED_WHITE_EN);
   PORTB |= _BV(LED_WHITE_PWM);
   TOCPMCOE |= _BV(TOCC7OE);
@@ -83,8 +101,6 @@ static inline void ledWhiteOff() {
   PORTB &= ~_BV(LED_WHITE_PWM);
   TOCPMCOE &= ~_BV(TOCC7OE);
 }
-
-#define BRIGHTNESS_DEFAULT 1023
 
 static inline void ledRedOn() { PORTA |= _BV(LED_RED); }
 static inline void ledRedOff() { PORTA &= ~_BV(LED_RED); }
@@ -114,9 +130,6 @@ void wdt_init(void) {
   MCUSR = 0;
   wdt_disable();
 }
-
-#define BUTTON_DEBOUNCE_INTERVAL_MS 10
-uint32_t buttonDebounceTs = 0;
 
 void processButtons() {
   if (millis() - buttonDebounceTs > BUTTON_DEBOUNCE_INTERVAL_MS) {
@@ -177,22 +190,17 @@ uint8_t getBatteryLevel();
 void bargraphStart(uint8_t level);
 void bargraphStop();
 
-typedef enum {
-  STATE_IDLE,
-  STATE_BATT_LEVEL,
-  STATE_WHITE_ON,
-  STATE_RED_ON,
-  STATE_FADE_WHITE
-} State_t;
-State_t state = STATE_IDLE;
-
-void onExit_STATE_IDLE() {}
+void onExit_STATE_IDLE() {
+  brightness = 255;
+  fadeUp = false;
+}
 
 void onExit_STATE_WHITE_ON() { ledWhiteOff(); }
 
-void onEnter_STATE_WHITE_ON(uint16_t brightness) {
+void onEnter_STATE_WHITE_ON(uint16_t p_brightness) {
   state = STATE_WHITE_ON;
-  ledWhiteOn(brightness);
+  ledWhiteOn(p_brightness);
+  state_change_ts = millis();
 }
 
 void onEnter_STATE_IDLE() {
@@ -203,6 +211,7 @@ void onEnter_STATE_IDLE() {
 void onEnter_STATE_RED_ON() {
   state = STATE_RED_ON;
   ledRedOn();
+  state_change_ts = millis();
 }
 
 void onExit_STATE_RED_ON() { ledRedOff(); }
@@ -214,22 +223,18 @@ void onEnter_STATE_BATT_LEVEL() {
 
 void onExit_STATE_BATT_LEVEL() { bargraphStop(); }
 
-uint32_t fade_ts = 0;
-uint8_t br = 0;
-bool fadeUp = true;
-
 void fadeWhite() {
   if (millis() - fade_ts > 10) {
-    ledWhiteSetBrightnes(pgm_read_word(&gamma8[br]));
+    ledWhiteSetBrightnes(pgm_read_word(&gamma8[brightness]));
     fade_ts = millis();
     if (fadeUp) {
-      br++;
-      if (br == 255) {
+      brightness++;
+      if (brightness == 255) {
         fadeUp = false;
       }
     } else {
-      br--;
-      if (30 == br) {
+      brightness--;
+      if (30 == brightness) {
         fadeUp = true;
       }
     }
@@ -239,9 +244,6 @@ void fadeWhite() {
 void onExit_STATE_FADE_WHITE() {}
 
 void onEnter_STATE_FADE_WHITE() {
-  br = 255;
-  // ledWhiteOn(&gamma8[br]);
-  fadeUp = false;
   fade_ts = millis();
   state = STATE_FADE_WHITE;
 }
@@ -269,8 +271,13 @@ void processStateMachine() {
     break;
   case STATE_WHITE_ON:
     if (isButtonEvent(&button, BUTTON_RELEASED)) {
-      onExit_STATE_WHITE_ON();
-      onEnter_STATE_RED_ON();
+      if (millis() - state_change_ts < 3000) {
+        onExit_STATE_WHITE_ON();
+        onEnter_STATE_RED_ON();
+      } else {
+        onExit_STATE_WHITE_ON();
+        onEnter_STATE_IDLE();
+      }
     } else if (isLongPress(&button, millis())) {
       onEnter_STATE_FADE_WHITE();
     }
@@ -473,7 +480,6 @@ void main() {
   sei();
 
   // wdt_enable(WDTO_2S);
-  // ledRedOn();
 
   onEnter_STATE_IDLE();
 
