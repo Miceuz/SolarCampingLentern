@@ -169,7 +169,7 @@ Prices are for a small batch of 10 units.
  * Weight: 297g
  * BOM Price: 27€
 
-## Conslusion
+## Conclusion
 
 I already have several plans for improvement - button is in a weird position - hard to find in the dark. I should put it in the middle of a edge. Battery level indication leds are a fail - I should have spaced them out along the edge so they would be distinguishable behind the plexiglass. Also I should use 4 while leds instead of two, also spaced out as now the single light source is a bit too strong. Trying to build one based on a smaller 100x100mm solar panel is also an interesting direction to explore.
 
