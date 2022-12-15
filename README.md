@@ -181,11 +181,11 @@ Prices are for a small batch of 10 units.
 
 ## Conclusion
 
-I already have several plans for improvement - button is in a weird position - hard to find in the dark. I should put it in the middle of a edge. Battery level indication leds are a fail - I should have spaced them out along the edge so they would be distinguishable behind the plexiglass. Also I should use 4 while leds instead of two, also spaced out as now the single light source is a bit too strong. Trying to build one based on a smaller 100x100mm solar panel is also an interesting direction to explore.
+I took me 3 PCB iterations to get it right, I had to adjust a button position so it's easier to find in the dark, also I had to spread battery level indication leds along the edge so they would be distinguishable behind the plexiglass. Finally I have used 4 while leds instead of two, also spaced out as the single light source was a bit too strong. 
 
 Weight is a concern, but here I am limited to materials I have access to. I have made some improvements by using a 0.8mm PCB, maybe I can make the frame lighter, but the real limiting factors are solar pannel and plexiglass.
 
-I have tried using the first prototype while camping at sunny autumn and it proved to be working well. Working time with 870mAh battery was a little too short for long autumn evenings, but it was able to fully charge during the day. Later I brought the panel to a rainy camping trip in December. Panel was barely charging the 5.5Ah battery, but it held almost two evenings allowing us to set up camp, prepare wood and chill under the red light in addition to fire. I think it's not much useful for rainy winter in Easter Europe, but it will be a perfect light for summer camping.
+I have tried using the first prototype while camping at sunny autumn and it proved to be working very well. Working time with 870mAh battery was a little too short for long autumn evenings at full 100lm, but it was able to fully charge during the next day. Later I brought the panel to a rainy camping trip in December. Panel was barely charging the 5.5Ah battery, but it held almost two evenings allowing us to set up camp, prepare wood and chill under the red light in addition to fire. I think it's not much useful for rainy winter in Easter Europe, but it will be a perfect light for summer camping.
 
 ![](pics/lantern-studio.jpg)
 ![](pics/red.jpg)
