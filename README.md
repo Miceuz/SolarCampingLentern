@@ -1,5 +1,7 @@
 # Open source Solar Camping Lantern
 
+![Open source Solar Camping Lantern](pics/camping1.jpg)
+
 ## Background
 
 I started seeing a lot of disposable electronic cigarettes being used. As everyone knows, those devices contain perfectly rechargeable LiPo battery. And I've seen them thrown away everywhere - on streets, in general waste thrash cans, etc. While a lot of my friends have successfully refilled juice and re-charged the battery, the devices are not built to last - heating coil dies after several re-uses anyway. I have decided to look for a way to recycle those batteries. 
@@ -107,11 +109,16 @@ It has plenty of solar - 1h of perfect sunlight should provide enough of charge 
 
 ### Mechanical construction
 
+![Frame of Solar Camping Lantern](pics/frame.jpg)
+
 Size and shape of the device is dictated by the solar panel. Since I wanted a lot of solar power, I knew I will not be able to make it as compact as commercially available devices. Also mechanical side of things is not my strength, so I went for a simple flat panel. One of use cases for such a light would be as a coaster for a water bottle - that makes a pretty nice low effort table light. Also I've added 4 holes to attach the lantern with rope - to a branch or a tarp. 
 
 All assembly is glue based (blergh!). Batteries are glued to the PCB. PCB is glued and soldered to the solar panel. Both the solar panel and plexiglass are glued to a 3D printed plastic frame.
 
 Considering the usage scenario, of course it should have some level of ingress protection. Provided all glue seams are tight (sic!), the only place for water to seep in is through a button hole. I am going to experiment with printing of the frame from flexible plastics and have the button hole closed, but for the first revision there's going to be a small seam between hole and plunger and IPX6 rated button behind it.
+
+![Solar Camping Lantern attached to a tree for charging](pics/camping2.jpg)
+
 
 ### MCU and software
 
@@ -169,6 +176,9 @@ Prices are for a small batch of 10 units.
  * Weight: 297g
  * BOM Price: 27€
 
+![PCB of Solar Camping Lantern](pics/pcb.jpg)
+
+
 ## Conclusion
 
 I already have several plans for improvement - button is in a weird position - hard to find in the dark. I should put it in the middle of a edge. Battery level indication leds are a fail - I should have spaced them out along the edge so they would be distinguishable behind the plexiglass. Also I should use 4 while leds instead of two, also spaced out as now the single light source is a bit too strong. Trying to build one based on a smaller 100x100mm solar panel is also an interesting direction to explore.
@@ -176,6 +186,10 @@ I already have several plans for improvement - button is in a weird position - h
 Weight is a concern, but here I am limited to materials I have access to. I have made some improvements by using a 0.8mm PCB, maybe I can make the frame lighter, but the real limiting factors are solar pannel and plexiglass.
 
 I have tried using the first prototype while camping at sunny autumn and it proved to be working well. Working time with 870mAh battery was a little too short for long autumn evenings, but it was able to fully charge during the day. Later I brought the panel to a rainy camping trip in December. Panel was barely charging the 5.5Ah battery, but it held almost two evenings allowing us to set up camp, prepare wood and chill under the red light in addition to fire. I think it's not much useful for rainy winter in Easter Europe, but it will be a perfect light for summer camping.
+
+![](pics/lantern-studio.jpg)
+![](pics/red.jpg)
+![](pics/white.jpg)
 
 ## Licence
 
